@@ -1,10 +1,3 @@
-//
-//  JSONManager.swift
-//  Furpics
-//
-//  Created by Rahul jha on 24/07/23.
-//
-
 import Foundation
 
 struct countryList: Codable {
