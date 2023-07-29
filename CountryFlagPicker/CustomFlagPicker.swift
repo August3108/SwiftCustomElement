@@ -1,9 +1,3 @@
-//
-//  text.swift
-//  Furpics
-//
-//  Created by Rahul jha on 24/07/23.
-//
 import SwiftUI
 
 struct CustomDialNumPicker: View {
@@ -14,7 +8,7 @@ struct CustomDialNumPicker: View {
     let imageSystemName: String
 
     @State private var isPopoverVisible = false
-
+    @State private var searchresult = ""
     var body: some View {
 
             VStack {
@@ -23,14 +17,17 @@ struct CustomDialNumPicker: View {
                 }) {
                     HStack {
                         Text(countrydata[selectedOption].flag)
-                        Text("+ \(countrydata[selectedOption].dialCode)")
+                        Text("+\(countrydata[selectedOption].dialCode)")
                         Image(systemName: imageSystemName)
                     }
 
                 }
                 .popover(isPresented: $isPopoverVisible) {
-                    ScrollView{
+                    
                         VStack {
+                            TextField("Enter Country Name", text: $searchresult)
+                                .padding()
+                            ScrollView{
                             ForEach(0..<countrydata.count, id: \.self) { index in
                                 Button(action: {
                                     selectedOption = index
@@ -38,17 +35,33 @@ struct CustomDialNumPicker: View {
                                     numlen = countrydata[index].numberOfDigit
                                     isPopoverVisible.toggle()
                                 }) {
-                                        HStack{
-                                            Text(countrydata[index].flag)
-                                            Text("+ \(countrydata[index].dialCode)")
-                                                .frame(width: 70)
-                                            Text(countrydata[index].name)
-                                            Spacer()
-                                        }.padding()
+                                    
+                                    VStack{
+                                        if (countrydata[index].name.hasPrefix(searchresult) && searchresult.count>0){
+                                            HStack{
+                                                Text(countrydata[index].flag)
+                                                Text("+ \(countrydata[index].dialCode)")
+                                                    .frame(width: 70)
+                                                Text(countrydata[index].name)
+                                                Spacer()
+                                            }
+                                        }
+                                        else if(searchresult.isEmpty)
+                                        {
+                                            HStack{
+                                                Text(countrydata[index].flag)
+                                                Text("+ \(countrydata[index].dialCode)")
+                                                    .frame(width: 70)
+                                                Text(countrydata[index].name)
+                                                Spacer()
+                                            }
+                                        }
+                                    }.padding(EdgeInsets(top: 1, leading: 1, bottom: 0, trailing: 0))
+                                        
                                 }
                             }
                         }}
-                    .presentationDetents([.medium, .large])
+                    .presentationDetents([.height(0.66 * UIScreen.main.bounds.height)])
                 }
 
 
