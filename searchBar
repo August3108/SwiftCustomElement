@@ -1,0 +1,24 @@
+// auto call search function
+import Foundation
+import SwiftUI
+
+struct SearchBar: View {
+    @State var searchHint : String
+    @State var delaySecond : TimeInterval
+    @Binding var searchBar : String
+    @State private var timer: Timer? = nil
+    var searchAction: (() -> Void)
+    
+    var body: some View {
+        VStack {
+            TextField(searchHint, text: $searchBar)
+                .font(.system(size: 16))
+                .onChange(of: searchBar) { newValue in
+                    timer?.invalidate() // Invalidate previous timer
+                    timer = Timer.scheduledTimer(withTimeInterval: delaySecond, repeats: false) { _ in
+                        searchAction()
+                    }
+                }
+        }
+    }
+}
