@@ -1,0 +1,168 @@
+// UIKIT Checkbox 
+// Steps to use 
+// Paste code in a file 
+// Make a View of 20 x 20 
+// give it class Checkbox
+
+import UIKit
+import AVFoundation
+
+@IBDesignable
+class Checkbox: UIView {
+    
+    // MARK: - Inspectable Properties
+    @IBInspectable var selectedBgColor: UIColor = .green {
+        didSet {
+            updateCheckboxAppearance()
+        }
+    }
+    
+    @IBInspectable var deselectedBgColor: UIColor = .white {
+        didSet {
+            updateCheckboxAppearance()
+        }
+    }
+    
+    @IBInspectable var borderColor: UIColor = .black {
+        didSet {
+            checkboxView.layer.borderColor = borderColor.cgColor
+        }
+    }
+    
+    @IBInspectable var borderWidth: CGFloat = 1.0 {
+        didSet {
+            checkboxView.layer.borderWidth = borderWidth
+        }
+    }
+    
+    @IBInspectable var checkmarkPathColor: UIColor = .black {
+        didSet {
+            checkmarkLayer.strokeColor = checkmarkPathColor.cgColor
+        }
+    }
+    @IBInspectable var allowTap: Bool = true  {
+        didSet {
+            updateTapGesture()
+        }
+    }
+    private let checkboxView = UIView()
+    private let checkmarkLayer = CAShapeLayer()
+    private let animationDuration: TimeInterval = 0.3 // Adjust animation speed
+    private var tapGesture: UITapGestureRecognizer?
+    var valChanged: ((_ boolVal : Bool)->Void)?
+    
+    // Initializer
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupCheckbox()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        setupCheckbox()
+    }
+    
+    func setupCheckbox(removeTapGesture: Bool = false ) {
+        // Configure checkboxView
+        checkboxView.frame = bounds
+        checkboxView.layer.cornerRadius = 5
+        checkboxView.layer.borderWidth = borderWidth
+        checkboxView.layer.borderColor = borderColor.cgColor
+        checkboxView.backgroundColor = deselectedBgColor
+        addSubview(checkboxView)
+        
+        // Configure checkmarkLayer
+        checkmarkLayer.fillColor = UIColor.clear.cgColor
+        checkmarkLayer.strokeColor = checkmarkPathColor.cgColor
+        checkmarkLayer.lineWidth = 3
+        checkmarkLayer.lineCap = .round
+        checkboxView.layer.addSublayer(checkmarkLayer)
+        
+    }
+    
+    @objc func toggleCheckbox() {
+        if checkboxView.backgroundColor == deselectedBgColor {
+            UIView.animate(withDuration: 0.18) {
+                self.checkboxView.backgroundColor = self.selectedBgColor
+            }
+            valChanged?(true)
+            animateCheckmark()
+        } else {
+            UIView.animate(withDuration: 0.2) {
+                self.checkboxView.backgroundColor = self.deselectedBgColor
+            }
+            checkmarkLayer.path = nil // Remove checkmark
+            valChanged?(false)
+        }
+    }
+    func disableTapGesture(){
+        self.removeGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(toggleCheckbox)))
+    }
+    private func animateCheckmark() {
+        let path = UIBezierPath()
+        
+        let checkmarkWidth: CGFloat = checkboxView.frame.size.width
+        let checkmarkHeight: CGFloat = checkboxView.frame.size.height
+
+        let startX = checkmarkWidth * 0.18
+        let startY = checkmarkHeight * 0.54
+        let midX = checkmarkWidth * 0.36
+        let midY = checkmarkHeight * 0.74
+        let endX = checkmarkWidth * 0.78
+        let endY = checkmarkHeight * 0.24
+
+        path.move(to: CGPoint(x: startX, y: startY)) // Start point
+        path.addLine(to: CGPoint(x: midX, y: midY))   // Middle point
+        path.addLine(to: CGPoint(x: endX, y: endY))   // End point
+
+        checkmarkLayer.path = path.cgPath
+        checkmarkLayer.fillColor = UIColor.clear.cgColor
+        checkmarkLayer.strokeColor = checkmarkPathColor.cgColor  // Set stroke color
+        checkmarkLayer.lineWidth = checkmarkWidth * 0.11  // Set line width proportional to checkbox width
+
+        // Create a stroke animation
+        let animation = CABasicAnimation(keyPath: "strokeEnd")
+        animation.fromValue = 0.0
+        animation.toValue = 1.0
+        animation.duration = animationDuration
+        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+
+        checkmarkLayer.add(animation, forKey: "strokeEnd")
+    }
+    private func updateTapGesture() {
+            if allowTap {
+                if tapGesture == nil {
+                    tapGesture = UITapGestureRecognizer(target: self, action: #selector(toggleCheckbox))
+                    self.addGestureRecognizer(tapGesture!)
+                }
+            } else {
+                if let tapGesture = tapGesture {
+                    self.removeGestureRecognizer(tapGesture)
+                    self.tapGesture = nil
+                }
+            }
+        }
+
+    private func updateCheckboxAppearance() {
+        checkboxView.backgroundColor = deselectedBgColor
+        checkboxView.layer.borderColor = borderColor.cgColor
+        checkmarkLayer.strokeColor = checkmarkPathColor.cgColor
+    }
+}
+
+usage Example
+class ViewController: UIViewController
+{
+    @IBOutlet weak var checkMark: Checkbox!
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        checkMark.valChanged = {
+            data in
+            if data == true {
+                print("Checked True")
+            } else {
+                print("Checked False")
+            }
+        }
+    }
+}
